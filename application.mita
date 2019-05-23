@@ -1,0 +1,93 @@
+/**
+ * 		Rexroth XDK micro SD sensor data logger
+ *	
+ * 		Author: 	K.Wilczynski
+ * 		Revision:	v0.1.0 (05.2019)
+ */
+
+package main;
+import platforms.xdk110;
+
+
+// Setup
+setup XDK110 {
+	applicationName = "DataLogger";			
+}
+setup accelerometer {
+  bandwidth 			= 	BW_1000Hz; 		
+  range					= 	Range_2G;
+  any_motion_threshold	=	20;
+  no_motion_threshold	=	20; 
+} 
+setup sd : SDCard {
+	var writer : string = appendingTextWrite("AccelerometerData.csv");
+}
+setup led : LED {
+	var red : bool = light_up(Red);
+	var orange : bool = light_up(Orange);
+	var yellow : bool = light_up(Yellow);
+}
+
+
+// Initialize the variables
+var inactive : bool = true;
+var accelerationX : int32;
+var accelerationY : int32;
+var accelerationZ : int32;
+
+every XDK110.startup{
+	led.red.write(true);
+	sd.writer.write(`Application start \n`);
+}
+
+every button_one.pressed {
+	if(inactive){
+		inactive = false;							
+		println(`Starting data acquisition \n`);
+		sd.writer.write(`Data acquisition started: accelerometer data (X ; Y ; Z) \n`);
+		let ps = XDK110.powerStatus.read();
+		where(ps) {
+       		is(PowerStatus.Battery -> level) {
+            	sd.writer.write(`Battery level: approx. ${level}% \n`);
+        	}
+        	is(PowerStatus.Corded) {
+            	sd.writer.write(`Battery level: USB connected, charging \n`);
+        	}
+        }
+		led.red.write(false);
+		led.yellow.write(true);
+	}
+	else{
+		inactive = true;
+		println(`Stopping data acquisition \n`);
+		sd.writer.write(`Data acquisition stopped \n`);
+		led.red.write(true);
+		led.yellow.write(false);							
+	}
+}
+
+every button_two.pressed {
+    let ps = XDK110.powerStatus.read();
+    where(ps) {
+        is(PowerStatus.Battery -> level) {
+            println(`Battery level: approx. ${level}%`);
+            if(inactive){
+    			sd.writer.write(`Battery level checked by the user: approx. ${level}%`);
+    		}
+        }
+        is(PowerStatus.Corded) {
+            println("Charged");
+            sd.writer.write(`Battery level checked by the user: USB connected, charging`);
+        }
+    } 
+}
+
+every 10 milliseconds {
+	if(!inactive){
+		accelerationX = accelerometer.x_axis.read();
+		accelerationY = accelerometer.y_axis.read();
+		accelerationZ = accelerometer.z_axis.read();
+		sd.writer.write(`${accelerationX} ; ${accelerationY} ; ${accelerationZ} \n`);
+		println(`X: ${accelerationX} Y: ${accelerationY} Z: ${accelerationZ}`);
+	}
+}
