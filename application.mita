@@ -43,7 +43,6 @@ every XDK110.startup{
 every button_one.pressed {
 	if(inactive){
 		inactive = false;							
-		println(`Starting data acquisition \n`);
 		sd.writer.write(`Data acquisition started: accelerometer data (X ; Y ; Z) \n`);
 		let ps = XDK110.powerStatus.read();
 		where(ps) {
@@ -59,7 +58,6 @@ every button_one.pressed {
 	}
 	else{
 		inactive = true;
-		println(`Stopping data acquisition \n`);
 		sd.writer.write(`Data acquisition stopped \n`);
 		led.red.write(true);
 		led.yellow.write(false);							
@@ -70,13 +68,11 @@ every button_two.pressed {
     let ps = XDK110.powerStatus.read();
     where(ps) {
         is(PowerStatus.Battery -> level) {
-            println(`Battery level: approx. ${level}%`);
             if(inactive){
     			sd.writer.write(`Battery level checked by the user: approx. ${level}%`);
     		}
         }
         is(PowerStatus.Corded) {
-            println("Charged");
             sd.writer.write(`Battery level checked by the user: USB connected, charging`);
         }
     } 
@@ -88,6 +84,5 @@ every 10 milliseconds {
 		accelerationY = accelerometer.y_axis.read();
 		accelerationZ = accelerometer.z_axis.read();
 		sd.writer.write(`${accelerationX} ; ${accelerationY} ; ${accelerationZ} \n`);
-		println(`X: ${accelerationX} Y: ${accelerationY} Z: ${accelerationZ}`);
 	}
 }
