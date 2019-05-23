@@ -1,4 +1,4 @@
-C:/Users/cwk1wz1/XDK-Workspace/EclipseMitaApplication/src-gen/debug/objects/source/Utility/ServalPAL.o: \
+C:/Users/cwk1wz1/XDK-Workspace/DataLogger/src-gen/debug/objects/source/Utility/ServalPAL.o: \
  source/Utility/ServalPAL.c \
  C:\XDK-Workbench360\XDK\SDK/xdk110/Common/include/XdkCommonInfo.h \
  ../Platform/Essentials/include/BCDS_Retcode.h \

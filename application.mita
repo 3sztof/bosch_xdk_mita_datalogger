@@ -21,6 +21,9 @@ setup accelerometer {
 } 
 setup sd : SDCard {
 	var writer : string = appendingTextWrite("AccelerometerData.csv");
+	var cycleInit : string = rewindingTextWrite(".cycle.xdk");
+	var cycleWriter : string = appendingTextWrite(".cycle.xdk");
+	var cycleReader : string = rewindingTextRead(".cycle.xdk", 1);
 }
 setup led : LED {
 	var red : bool = light_up(Red);
@@ -31,19 +34,24 @@ setup led : LED {
 
 // Initialize the variables
 var inactive : bool = true;
+var cycle : int32;
+var sCycle : string;
+var orangeBlink : bool;
+var orangeOn : bool = false;
+var orangeBlinksRequested : int32 = 0;
+var blinkCounter : int32 = 0;
 var accelerationX : int32;
 var accelerationY : int32;
 var accelerationZ : int32;
 
 every XDK110.startup{
 	led.red.write(true);
-	sd.writer.write(`Application start \n`);
+	sd.cycleInit.write("x");
+	sd.writer.write(`XDK power on \n`);
 }
 
 every button_one.pressed {
-	if(inactive){
-		inactive = false;							
-		sd.writer.write(`Data acquisition started: accelerometer data (X ; Y ; Z) \n`);
+	if(inactive) {
 		let ps = XDK110.powerStatus.read();
 		where(ps) {
        		is(PowerStatus.Battery -> level) {
@@ -53,29 +61,48 @@ every button_one.pressed {
             	sd.writer.write(`Battery level: USB connected, charging \n`);
         	}
         }
+        
+        sCycle = sd.cycleReader.read();
+        if(sCycle == "x"){
+        	sd.cycleWriter.write("1");
+        	cycle = 1;
+        }
+        cycle += 1;
+        sd.writer.write(`Data acquisition cycle: ${cycle} \n`);
+        							
+		sd.writer.write(`X [raw] ; Y [raw] ; Z [raw] ; cycle time [ms] \n`);
+		
 		led.red.write(false);
 		led.yellow.write(true);
+		inactive = false;
 	}
 	else{
-		inactive = true;
-		sd.writer.write(`Data acquisition stopped \n`);
+		sd.writer.write(`Data acquisition stopped \n\n\n`);
 		led.red.write(true);
 		led.yellow.write(false);							
+		inactive = true;
 	}
 }
 
 every button_two.pressed {
-    let ps = XDK110.powerStatus.read();
-    where(ps) {
-        is(PowerStatus.Battery -> level) {
-            if(inactive){
-    			sd.writer.write(`Battery level checked by the user: approx. ${level}%`);
-    		}
-        }
-        is(PowerStatus.Corded) {
-            sd.writer.write(`Battery level checked by the user: USB connected, charging`);
-        }
-    } 
+	/*
+	  	let ps = XDK110.powerStatus.read();
+	    where(ps) {
+	        is(PowerStatus.Battery -> level) {
+	            if(inactive){
+	    			sd.writer.write(`Battery level checked by the user: approx. ${level}%`);
+	    		}
+	        }
+	        is(PowerStatus.Corded) {
+	            sd.writer.write(`Battery level checked by the user: USB connected, charging`);
+	        }
+	    }
+	 */
+    
+    // Cycle number indicator
+    println(`Data acquisition cycle: ${cycle}`);
+    orangeBlinksRequested = cycle;
+    orangeBlink = true;
 }
 
 every 10 milliseconds {
@@ -86,3 +113,29 @@ every 10 milliseconds {
 		sd.writer.write(`${accelerationX} ; ${accelerationY} ; ${accelerationZ} \n`);
 	}
 }
+
+every 200 milliseconds {
+	if(!inactive){
+		if(orangeBlink){
+			if(orangeBlinksRequested > blinkCounter){
+				if(!orangeOn){
+					led.orange.write(true);
+					orangeOn = true;
+				}
+				else {
+					led.orange.write(false);
+					orangeOn = false;
+					blinkCounter += 1;
+				}
+			}
+			else {
+				blinkCounter = 0;
+				orangeBlink = false;
+				orangeBlinksRequested = 0;
+			}
+		}
+	}
+}
+
+native unchecked fn atoi(n : string) : int32
+	header "stdlib.h";

@@ -1,4 +1,4 @@
-C:/Users/cwk1wz1/XDK-Workspace/EclipseMitaApplication/src-gen/debug/objects/source/Utility/Storage.o: \
+C:/Users/cwk1wz1/XDK-Workspace/DataLogger/src-gen/debug/objects/source/Utility/Storage.o: \
  source/Utility/Storage.c \
  C:\XDK-Workbench360\XDK\SDK/xdk110/Common/include/XdkCommonInfo.h \
  ../Platform/Essentials/include/BCDS_Retcode.h \

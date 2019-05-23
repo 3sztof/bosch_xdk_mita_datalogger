@@ -1,4 +1,4 @@
-C:/Users/cwk1wz1/XDK-Workspace/EclipseMitaApplication/src-gen/debug/objects/source/Sensor/Sensor.o: \
+C:/Users/cwk1wz1/XDK-Workspace/DataLogger/src-gen/debug/objects/source/Sensor/Sensor.o: \
  source/Sensor/Sensor.c \
  C:\XDK-Workbench360\XDK\SDK/xdk110/Common/include/XdkCommonInfo.h \
  ../Platform/Essentials/include/BCDS_Retcode.h \

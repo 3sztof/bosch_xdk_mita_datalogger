@@ -1,4 +1,4 @@
-C:/Users/cwk1wz1/XDK-Workspace/EclipseMitaApplication/src-gen/debug/objects/source/Connectivity/BLE/BleDeviceInfoService.o: \
+C:/Users/cwk1wz1/XDK-Workspace/DataLogger/src-gen/debug/objects/source/Connectivity/BLE/BleDeviceInfoService.o: \
  source/Connectivity/BLE/BleDeviceInfoService.c \
  ../Platform/Essentials/include/BCDS_Basics.h \
  ../Platform/Essentials/include/BCDS_Retcode.h \

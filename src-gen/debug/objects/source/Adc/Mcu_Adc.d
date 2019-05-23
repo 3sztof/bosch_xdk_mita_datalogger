@@ -1,4 +1,4 @@
-C:/Users/cwk1wz1/XDK-Workspace/EclipseMitaApplication/src-gen/debug/objects/source/Adc/Mcu_Adc.o: \
+C:/Users/cwk1wz1/XDK-Workspace/DataLogger/src-gen/debug/objects/source/Adc/Mcu_Adc.o: \
  source/Adc/Mcu_Adc.c source/Adc/Mcu_Adc_Handle.h source/Adc/Mcu_Adc.h \
  ../Platform/Essentials/include/BCDS_HAL.h \
  ../Platform/Essentials/include/BCDS_Retcode.h \
