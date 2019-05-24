@@ -1,8 +1,9 @@
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 // 		Rexroth XDK micro SD sensor data logger
 //	
-// 		Author: 	K.Wilczynski
-// 		Revision:	05.2019
+// 		Author: 		K.Wilczynski
+// 		Revision:		05.2019
+//		XDK-Workbench:	3.6.0
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 package main;
@@ -14,24 +15,30 @@ import platforms.xdk110;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 setup XDK110 {
-	applicationName = "DataLogger";			
+	applicationName 	= "DataLogger";	
+	startupDelay 		= 3000;		
 }
 setup accelerometer {
-  bandwidth 			= 	BW_1000Hz; 		
-  range					= 	Range_2G;
-  any_motion_threshold	=	20;
-  no_motion_threshold	=	20; 
+	bandwidth 			= 	BW_1000Hz; 		
+	range					= 	Range_2G;
+	any_motion_threshold	=	20;
+	no_motion_threshold	=	20; 
 } 
 setup sd : SDCard {
-	var writer : string = appendingTextWrite("AccelerometerData.csv");
-	var cycleInit : array<uint8> = appendingBinaryWrite(".cycle.xdk");
-	var cycleWriter : array<uint8> = rewindingBinaryWrite(".cycle.xdk");
-	var cycleReader : array<uint8> = rewindingBinaryRead(".cycle.xdk", 1);
+	var writer 		: string 		= appendingTextWrite("CollectedData.csv");
+	var cycleInit 	: array<uint8> 	= appendingBinaryWrite(".cycle.xdk");
+	var cycleWriter : array<uint8> 	= rewindingBinaryWrite(".cycle.xdk");
+	var cycleReader : array<uint8> 	= rewindingBinaryRead(".cycle.xdk", 2);
 }
 setup led : LED {
-	var red : bool = light_up(Red);
-	var orange : bool = light_up(Orange);
-	var yellow : bool = light_up(Yellow);
+	var red 	: bool 	= light_up(Red);
+	var orange 	: bool 	= light_up(Orange);
+	var yellow 	: bool 	= light_up(Yellow);
+}
+setup environment {
+	power_mode 				= Normal;
+	standby_time 			= 1000;
+	pressure_oversampling 	= OVERSAMPLE_2X;
 }
 
 
@@ -39,16 +46,20 @@ setup led : LED {
 //		Variables initialization
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-var inactive : bool = true;
-var cycle : int32;
-var sCycle : string;
-var orangeBlink : bool;
-var orangeOn : bool = false;
-var orangeBlinksRequested : int32 = 0;
-var blinkCounter : int32 = 0;
-var accelerationX : int32;
-var accelerationY : int32;
-var accelerationZ : int32;
+var inactive 	: bool = true;
+var cycle 		: array<uint8> = new array<uint8>(size=2);
+var cycleTime 	: uint32 = 0;
+var cycleNum 	: uint8;
+
+var orangeBlink 			: bool;
+var orangeOn 				: bool = false;
+var orangeBlinksRequested 	: uint8 = 0;
+var blinkCounter 			: int32 = 0;
+
+var accelerationX 	: int32;
+var accelerationY 	: int32;
+var accelerationZ 	: int32;
+var pressure 		: uint32;
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -57,8 +68,9 @@ var accelerationZ : int32;
 
 every XDK110.startup{
 	led.red.write(true);
-	sd.cycleInit.write(`x`);
-	sd.writer.write(`XDK power on \n`);
+	let init : array<uint8> = [0, 0];
+	sd.cycleInit.write(init);
+	sd.writer.write(`Status: , powered on \n \n \n`);
 }
 
 every button_one.pressed {
@@ -66,65 +78,57 @@ every button_one.pressed {
 		let ps = XDK110.powerStatus.read();
 		where(ps) {
        		is(PowerStatus.Battery -> level) {
-            	sd.writer.write(`Battery level: approx. ${level}% \n`);
+            	sd.writer.write(`Battery level: , approx. ${level}% \n`);
         	}
         	is(PowerStatus.Corded) {
-            	sd.writer.write(`Battery level: USB connected, charging \n`);
+            	sd.writer.write(`Battery level: ,  charging \n`);
         	}
         }
         
-        sCycle = sd.cycleReader.read();
-        if(sCycle == `x`){
-        	cycle = 0;
+        cycle = sd.cycleReader.read();
+        if(cycle[0] == 0 && cycle[1] == 0){
+        	cycleNum = 0;
         }
-        cycle += 1;
-        sd.cycleWriter.write(`1`);
+        else{
+        	cycleNum = cycle[0] + cycle[1] * 10;
+        }
         
-        sd.writer.write(`Data acquisition cycle: ${cycle} \n`);
-        							
-		sd.writer.write(`X [raw] ; Y [raw] ; Z [raw] ; cycle time [ms] \n`);
+        cycleNum += 1;
+        cycle[0] = cycleNum;
+        cycle[1] = cycleNum / 10;
+        sd.cycleWriter.write(cycle);
+        
+        sd.writer.write(`Data acquisition cycle: , ${cycleNum} \n`);      							
+		sd.writer.write(`Acceleration: X [raw] , Acceleration: Y [raw] , Acceleration: Z [raw] , Pressure [raw] , Cycle time [ms] \n`);
 		
 		led.red.write(false);
 		led.yellow.write(true);
 		inactive = false;
 	}
 	else{
-		sd.writer.write(`Data acquisition stopped \n\n\n`);
+		sd.writer.write(`Status: , data acquisition stopped by the user \n \n \n \n`);
 		led.red.write(true);
 		led.yellow.write(false);							
 		inactive = true;
+		cycleTime = 0;
 	}
 }
 
-every button_two.pressed {
-	/*
-	  	let ps = XDK110.powerStatus.read();
-	    where(ps) {
-	        is(PowerStatus.Battery -> level) {
-	            if(inactive){
-	    			sd.writer.write(`Battery level checked by the user: approx. ${level}%`);
-	    		}
-	        }
-	        is(PowerStatus.Corded) {
-	            sd.writer.write(`Battery level checked by the user: USB connected, charging`);
-	        }
-	    }
-	 */
-    
-    // Cycle number indicator
+every button_two.pressed {  
     if(!inactive) {
-    	println(`Data acquisition cycle: ${cycle}`);
-	    orangeBlinksRequested = cycle;
+	    orangeBlinksRequested = cycleNum;
 	    orangeBlink = true;
     }  
 }
 
-every 10 milliseconds {
+every 20 milliseconds {
 	if(!inactive){
+		cycleTime += 20;
 		accelerationX = accelerometer.x_axis.read();
 		accelerationY = accelerometer.y_axis.read();
 		accelerationZ = accelerometer.z_axis.read();
-		sd.writer.write(`${accelerationX} ; ${accelerationY} ; ${accelerationZ} \n`);
+		pressure 	  = environment.pressure.read();
+		sd.writer.write(`${accelerationX} , ${accelerationY} , ${accelerationZ} , ${pressure} , ${cycleTime} \n`);
 	}
 }
 

@@ -38,6 +38,7 @@ export BCDS_XDK_APP_SOURCE_FILES = \
 	$(BCDS_APP_SOURCE_DIR)/base/ConnectivityLEDLed.c \
 	$(BCDS_APP_SOURCE_DIR)/base/PlatformXDK110.c \
 	$(BCDS_APP_SOURCE_DIR)/base/SensorAccelerometer.c \
+	$(BCDS_APP_SOURCE_DIR)/base/SensorEnvironment.c \
 	$(BCDS_APP_SOURCE_DIR)/base/SensorButton_one.c \
 	$(BCDS_APP_SOURCE_DIR)/base/SensorButton_two.c \
 	$(BCDS_APP_SOURCE_DIR)/application.c

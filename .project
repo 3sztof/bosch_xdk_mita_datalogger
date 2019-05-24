@@ -46,7 +46,7 @@
 		<link>
 			<name>SDK</name>
 			<type>2</type>
-			<location>C:/XDKWorkbench360/XDK/SDK</location>
+			<location>C:/XDK-Workbench360/XDK/SDK</location>
 		</link>
 	</linkedResources>
 </projectDescription>
