@@ -1,6 +1,6 @@
 # Bosch XDK DataLogger
 
-[<img src="https://assets.bosch.com/media/global/products_and_solutions/connected_products_and_services/industy_40/xdk-110_res_800x450.png"  width="200" height="112" />)](http://xdk.bosch-connectivity.com/)
+[<img src="https://assets.bosch.com/media/global/products_and_solutions/connected_products_and_services/industy_40/xdk-110_res_800x450.png"  width="200" height="112" />](http://xdk.bosch-connectivity.com/)
 
 > Author: [Krzysztof Wilczynski](https://www.linkedin.com/in/3sztof/)
 
