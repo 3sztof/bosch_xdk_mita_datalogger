@@ -1,15 +1,18 @@
-/**
- * 		Rexroth XDK micro SD sensor data logger
- *	
- * 		Author: 	K.Wilczynski
- * 		Revision:	05.2019
- */
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------
+// 		Rexroth XDK micro SD sensor data logger
+//	
+// 		Author: 	K.Wilczynski
+// 		Revision:	05.2019
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 package main;
 import platforms.xdk110;
 
 
-// Setup
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+//		Device setup
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 setup XDK110 {
 	applicationName = "DataLogger";			
 }
@@ -21,9 +24,9 @@ setup accelerometer {
 } 
 setup sd : SDCard {
 	var writer : string = appendingTextWrite("AccelerometerData.csv");
-	var cycleInit : string = rewindingTextWrite(".cycle.xdk");
-	var cycleWriter : string = appendingTextWrite(".cycle.xdk");
-	var cycleReader : string = rewindingTextRead(".cycle.xdk", 1);
+	var cycleInit : array<uint8> = appendingBinaryWrite(".cycle.xdk");
+	var cycleWriter : array<uint8> = rewindingBinaryWrite(".cycle.xdk");
+	var cycleReader : array<uint8> = rewindingBinaryRead(".cycle.xdk", 1);
 }
 setup led : LED {
 	var red : bool = light_up(Red);
@@ -32,7 +35,10 @@ setup led : LED {
 }
 
 
-// Initialize the variables
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+//		Variables initialization
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 var inactive : bool = true;
 var cycle : int32;
 var sCycle : string;
@@ -44,9 +50,14 @@ var accelerationX : int32;
 var accelerationY : int32;
 var accelerationZ : int32;
 
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+//		Event triggers
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 every XDK110.startup{
 	led.red.write(true);
-	sd.cycleInit.write("x");
+	sd.cycleInit.write(`x`);
 	sd.writer.write(`XDK power on \n`);
 }
 
@@ -63,11 +74,12 @@ every button_one.pressed {
         }
         
         sCycle = sd.cycleReader.read();
-        if(sCycle == "x"){
-        	sd.cycleWriter.write("1");
-        	cycle = 1;
+        if(sCycle == `x`){
+        	cycle = 0;
         }
         cycle += 1;
+        sd.cycleWriter.write(`1`);
+        
         sd.writer.write(`Data acquisition cycle: ${cycle} \n`);
         							
 		sd.writer.write(`X [raw] ; Y [raw] ; Z [raw] ; cycle time [ms] \n`);
@@ -100,9 +112,11 @@ every button_two.pressed {
 	 */
     
     // Cycle number indicator
-    println(`Data acquisition cycle: ${cycle}`);
-    orangeBlinksRequested = cycle;
-    orangeBlink = true;
+    if(!inactive) {
+    	println(`Data acquisition cycle: ${cycle}`);
+	    orangeBlinksRequested = cycle;
+	    orangeBlink = true;
+    }  
 }
 
 every 10 milliseconds {
@@ -136,6 +150,11 @@ every 200 milliseconds {
 		}
 	}
 }
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+//		Functions and native C code porting
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 native unchecked fn atoi(n : string) : int32
 	header "stdlib.h";
