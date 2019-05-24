@@ -1,7 +1,8 @@
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 // 		Rexroth XDK micro SD sensor data logger
 //	
-// 		Author: 		K.Wilczynski
+// 		Author: 		K.Wilczynski 
+//		Contact:		fixed-term.krzysztof.wilczynski@boschrexroth.pl || 3sztof@pm.me
 // 		Revision:		05.2019
 //		XDK-Workbench:	3.6.0
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -16,13 +17,13 @@ import platforms.xdk110;
 
 setup XDK110 {
 	applicationName 	= "DataLogger";	
-	startupDelay 		= 3000;		
+	startupDelay 		= 4000;		
 }
 setup accelerometer {
-	bandwidth 			= 	BW_1000Hz; 		
+	bandwidth 				= 	BW_1000Hz; 		
 	range					= 	Range_2G;
 	any_motion_threshold	=	20;
-	no_motion_threshold	=	20; 
+	no_motion_threshold		=	20; 
 } 
 setup sd : SDCard {
 	var writer 		: string 		= appendingTextWrite("CollectedData.csv");
@@ -46,7 +47,7 @@ setup environment {
 //		Variables initialization
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-var inactive 	: bool = true;
+var inactive 	: bool;
 var cycle 		: array<uint8> = new array<uint8>(size=2);
 var cycleTime 	: uint32 = 0;
 var cycleNum 	: uint8;
@@ -70,43 +71,44 @@ every XDK110.startup{
 	led.red.write(true);
 	let init : array<uint8> = [0, 0];
 	sd.cycleInit.write(init);
-	sd.writer.write(`Status: , powered on \n \n \n`);
+	sd.writer.write(`Status: ,Powered on \n \n \n`);
+	inactive = true;
 }
 
 every button_one.pressed {
-	if(inactive) {
-		let ps = XDK110.powerStatus.read();
-		where(ps) {
-       		is(PowerStatus.Battery -> level) {
-            	sd.writer.write(`Battery level: , approx. ${level}% \n`);
-        	}
-        	is(PowerStatus.Corded) {
-            	sd.writer.write(`Battery level: ,  charging \n`);
-        	}
-        }
-        
+	if(inactive) {    
         cycle = sd.cycleReader.read();
         if(cycle[0] == 0 && cycle[1] == 0){
         	cycleNum = 0;
         }
         else{
-        	cycleNum = cycle[0] + cycle[1] * 10;
+        	cycleNum = cycle[0] * 10 + cycle[1];
         }
         
         cycleNum += 1;
-        cycle[0] = cycleNum;
-        cycle[1] = cycleNum / 10;
+        cycle[1] = cycleNum - (cycleNum / 10) * 10;
+        cycle[0] = cycleNum / 10;
         sd.cycleWriter.write(cycle);
+        sd.writer.write(`Data acquisition cycle: , ${cycleNum} \n`);
         
-        sd.writer.write(`Data acquisition cycle: , ${cycleNum} \n`);      							
+        let ps = XDK110.powerStatus.read();
+		where(ps) {
+       		is(PowerStatus.Battery -> level) {
+            	sd.writer.write(`Battery level: ,Approx. ${level}% \n`);
+        	}
+        	is(PowerStatus.Corded) {
+            	sd.writer.write(`Battery level: ,Charging \n`);
+        	}
+        }
+              							
 		sd.writer.write(`Acceleration: X [raw] , Acceleration: Y [raw] , Acceleration: Z [raw] , Pressure [raw] , Cycle time [ms] \n`);
 		
 		led.red.write(false);
 		led.yellow.write(true);
 		inactive = false;
 	}
-	else{
-		sd.writer.write(`Status: , data acquisition stopped by the user \n \n \n \n`);
+	else {
+		sd.writer.write(`Status: ,Data acquisition stopped by the user \n \n \n \n`);
 		led.red.write(true);
 		led.yellow.write(false);							
 		inactive = true;
