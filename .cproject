@@ -204,6 +204,10 @@
 									<listOptionValue builtIn="false" value="XDK_UTILITY_SERVALPAL=1"/>
 									<listOptionValue builtIn="false" value="BCDS_SERVAL_COMMBUFF_SEND_BUFFER_MAX_LEN=1000"/>
 								</option>
+								<option id="gnu.c.compiler.option.preprocessor.undef.symbol.909204180" superClass="gnu.c.compiler.option.preprocessor.undef.symbol" valueType="undefDefinedSymbols">
+									<listOptionValue builtIn="false" value="BCDS_PACKAGE_ID"/>
+									<listOptionValue builtIn="false" value="SERVAL_SECURE_SERVER_Building"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1438301980" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="com.bosch.cds.xdk.toolchain.c.ld.1714533597" name="BCDS C Linker" superClass="com.bosch.cds.xdk.toolchain.c.ld">

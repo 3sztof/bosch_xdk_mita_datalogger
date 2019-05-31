@@ -17,7 +17,7 @@ import platforms.xdk110;
 
 setup XDK110 {
 	applicationName 	= "DataLogger";	
-	startupDelay 		= 4000;		
+	startupDelay 		= 5000;		
 }
 setup accelerometer {
 	bandwidth 				= 	BW_1000Hz; 		
@@ -125,16 +125,18 @@ every button_two.pressed {
 
 every 20 milliseconds {
 	if(!inactive){
-		cycleTime += 20;
+		cycleTime += 1;
 		accelerationX = accelerometer.x_axis.read();
 		accelerationY = accelerometer.y_axis.read();
 		accelerationZ = accelerometer.z_axis.read();
 		pressure 	  = environment.pressure.read();
-		sd.writer.write(`${accelerationX} , ${accelerationY} , ${accelerationZ} , ${pressure} , ${cycleTime} \n`);
+		let realCycleTime : double = cycleTime * 100;
+		
+		sd.writer.write(`${accelerationX} , ${accelerationY} , ${accelerationZ} , ${pressure} , ${realCycleTime} \n`);
 	}
 }
 
-every 200 milliseconds {
+every 250 milliseconds {
 	if(!inactive){
 		if(orangeBlink){
 			if(orangeBlinksRequested > blinkCounter){
@@ -156,11 +158,3 @@ every 200 milliseconds {
 		}
 	}
 }
-
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------------------
-//		Functions and native C code porting
-// -------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-native unchecked fn atoi(n : string) : int32
-	header "stdlib.h";
