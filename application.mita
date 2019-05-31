@@ -101,14 +101,14 @@ every button_one.pressed {
         	}
         }
               							
-		sd.writer.write(`Acceleration: X [raw] , Acceleration: Y [raw] , Acceleration: Z [raw] , Pressure [raw] , Cycle time [ms] \n`);
+		sd.writer.write(`Acceleration: X [raw] , Acceleration: Y [raw] , Acceleration: Z [raw] , Pressure [raw] , Cycle time [s] \n`);
 		
 		led.red.write(false);
 		led.yellow.write(true);
 		inactive = false;
 	}
 	else {
-		sd.writer.write(`Status: ,Data acquisition stopped by the user \n \n \n \n`);
+		sd.writer.write(`\nStatus: ,Data acquisition cycle ${cycleNum} stopped by the user \n \n \n \n`);
 		led.red.write(true);
 		led.yellow.write(false);							
 		inactive = true;
@@ -130,7 +130,7 @@ every 20 milliseconds {
 		accelerationY = accelerometer.y_axis.read();
 		accelerationZ = accelerometer.z_axis.read();
 		pressure 	  = environment.pressure.read();
-		let realCycleTime : double = cycleTime * 100;
+		let realCycleTime : double = (cycleTime * 20) / 1000;
 		
 		sd.writer.write(`${accelerationX} , ${accelerationY} , ${accelerationZ} , ${pressure} , ${realCycleTime} \n`);
 	}
